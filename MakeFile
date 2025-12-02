@@ -1,0 +1,51 @@
+.PHONY: all build test deploy verify fund faucet
+
+all: build test
+
+install:
+	forge install OpenZeppelin/openzeppelin-contracts@v4.5.0 --no-commit
+
+build:
+	forge build
+
+test:
+	forge test -vvv
+
+test-gas:
+	forge test --gas-report
+
+deploy:
+	forge script script/DeployCCNFT.s.sol:DeployCCNFT \
+		--rpc-url $(SEPOLIA_RPC_URL) \
+		--private-key $(PRIVATE_KEY) \
+		--broadcast \
+		--verify \
+		--legacy \
+		-vvvv
+
+verify:
+	forge verify-contract \
+		--chain-id 11155111 \
+		--num-of-optimizations 200 \
+		--compiler-version v0.8.19+commit.7dd6d404 \
+		$(CONTRACT_ADDRESS) \
+		src/CCNFT.sol:CCNFT \
+		--etherscan-api-key $(ETHERSCAN_API_KEY)
+
+fund:
+	@echo "Get funds at: https://sepoliafaucet.com"
+
+faucet:
+	@echo "Opening Alchemy Faucet..."
+	@open "https://sepoliafaucet.com" || \
+		echo "Visit: https://sepoliafaucet.com"
+
+clean:
+	forge clean
+
+env:
+	@echo "=== Current Environment ==="
+	@echo "ALCHEMY_API_KEY: $(ALCHEMY_API_KEY)"
+	@echo "ETHERSCAN_API_KEY: $(ETHERSCAN_API_KEY)"
+	@echo "SEPOLIA_RPC_URL: $(SEPOLIA_RPC_URL)"
+	@echo "==========================="
